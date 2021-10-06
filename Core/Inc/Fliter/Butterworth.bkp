@@ -1,0 +1,19 @@
+#ifndef __BUTTERWORTH_H_
+#define __BUTTERWORTH_H_
+
+
+typedef struct
+{
+	int order;
+	int count;
+	float *num;
+	float *den;
+	float *xbuf;
+	float *ybuf;
+	
+}Butterworth_Type;
+
+void Butterworth_Init(Butterworth_Type *ButterworthData,float *num,float *den,float *xBuf,float *yBuf,int order);
+float Butterworth_Filter(Butterworth_Type *ButterworthData,const float Xk);
+
+#endif

@@ -1,0 +1,209 @@
+/*
+ * DataHandle.c
+ *
+ *  Created on: 2021年4月15日
+ *      Author: 90797
+ */
+#include "DataHandle.h"
+#include "FIRFilter.h"
+#include "Butterworth.h"
+#include "arm_math.h"
+
+/*******************************FIRFliter**********************************************/
+
+
+/**********************************IIRFliter******************************************************/
+
+// static float IIR_Num_Fre200to35[3]={0.167483800127017,   0.334967600254034,   0.167483800127017};	//500--50Hz  50Hz -159.85
+// static float IIR_Den_Fre200to35[3]={1.000000000000000,  -0.557030997311751,   0.226966197819818};
+
+// static float IIR_Num_Fre100to25[3]={0.292893218813452,   0.585786437626905,   0.292893218813452};	//100--25Hz
+// static float IIR_Den_Fre100to25[3]={1.000000000000000,  -0.000000000000000,   0.171572875253810};
+
+static float IIR_Num_Fre100to20[3]={0.206572083826148,   0.413144167652296,   0.206572083826148};	//100--20Hz
+static float IIR_Den_Fre100to20[3]={1.000000000000000,  -0.369527377351241,   0.195815712655833};
+
+static float IIR_Num_Fre100to15[3]={0.131106439916626,   0.262212879833252,   0.131106439916626};	//100--15Hz
+static float IIR_Den_Fre100to15[3]={1.000000000000000,  -0.747789178258503,   0.272214937925007};
+
+static float IIR_Num_Fre100to5[3]={0.020083365564211,   0.040166731128422,   0.020083365564211};	//100--5Hz
+static float IIR_Den_Fre100to5[3]={1.000000000000000,  -1.561018075800718,   0.641351538057563};
+
+//加速度30Hz滤波
+
+Butterworth_Type Butterworth_Acc_x,Butterworth_Acc_y,Butterworth_Acc_z;
+static float Butterworth_Acc_x_Bufx[3],Butterworth_Acc_x_Bufy[3];
+static float Butterworth_Acc_y_Bufx[3],Butterworth_Acc_y_Bufy[3];
+static float Butterworth_Acc_z_Bufx[3],Butterworth_Acc_z_Bufy[3];
+
+//角速度50Hz滤波
+Butterworth_Type Butterworth_Gyro_x,Butterworth_Gyro_y,Butterworth_Gyro_z;
+static float Butterworth_Gyro_x_Bufx[3],Butterworth_Gyro_x_Bufy[3];
+static float Butterworth_Gyro_y_Bufx[3],Butterworth_Gyro_y_Bufy[3];
+static float Butterworth_Gyro_z_Bufx[3],Butterworth_Gyro_z_Bufy[3];
+
+//磁力计10Hz滤波
+Butterworth_Type Butterworth_Mag_x,Butterworth_Mag_y,Butterworth_Mag_z;
+static float Butterworth_Mag_x_Bufx[3],Butterworth_Mag_x_Bufy[3];
+static float Butterworth_Mag_y_Bufx[3],Butterworth_Mag_y_Bufy[3];
+static float Butterworth_Mag_z_Bufx[3],Butterworth_Mag_z_Bufy[3];
+
+//气压计滤波
+FIRFilter_Type FIRFilter_Pressure_Sensor1,FIRFilter_Pressure_Sensor2;
+static float FIRFilter_Pressure_Sensor1_Bufx[4];
+static float FIRFilter_Pressure_Sensor2_Bufx[4];
+
+//超声波滤波
+Butterworth_Type Butterworth_Ultrasonic;
+static float Butterworth_Ultrasonic_Bufx[3];
+static float Butterworth_Ultrasonic_Bufy[3];
+
+//光流滤波
+Butterworth_Type Butterworth_OpticalFlow_X,Butterworth_OpticalFlow_Y;
+static float Butterworth_OpticalFlow_X_Bufx[3],Butterworth_OpticalFlow_Y_Bufx[3];
+static float Butterworth_OpticalFlow_X_Bufy[3],Butterworth_OpticalFlow_Y_Bufy[3];
+
+//UWB
+// FIRFilter_Type FIRFilter_UWB_x,FIRFilter_UWB_y;
+// static float FIRFilter_UWB_x_Bufx[4],FIRFilter_UWB_y_Bufx[4];
+
+void DataHandle_Init()
+{
+	//Acc
+	// Butterworth_Init(&Butterworth_Acc_x,IIR_Num_Fre100to15,IIR_Den_Fre100to15,Butterworth_Acc_x_Bufx,Butterworth_Acc_x_Bufy,2);
+	// Butterworth_Init(&Butterworth_Acc_y,IIR_Num_Fre100to15,IIR_Den_Fre100to15,Butterworth_Acc_y_Bufx,Butterworth_Acc_y_Bufy,2);
+	// Butterworth_Init(&Butterworth_Acc_z,IIR_Num_Fre100to15,IIR_Den_Fre100to15,Butterworth_Acc_z_Bufx,Butterworth_Acc_z_Bufy,2);
+
+	// Butterworth_Init(&Butterworth_Acc_x,IIR_Num_Fre100to20,IIR_Den_Fre100to20,Butterworth_Acc_x_Bufx,Butterworth_Acc_x_Bufy,2);
+	// Butterworth_Init(&Butterworth_Acc_y,IIR_Num_Fre100to20,IIR_Den_Fre100to20,Butterworth_Acc_y_Bufx,Butterworth_Acc_y_Bufy,2);
+	// Butterworth_Init(&Butterworth_Acc_z,IIR_Num_Fre100to20,IIR_Den_Fre100to20,Butterworth_Acc_z_Bufx,Butterworth_Acc_z_Bufy,2);
+
+	// Butterworth_Init(&Butterworth_Acc_x,IIR_Num_Fre100to15,IIR_Den_Fre100to15,Butterworth_Acc_x_Bufx,Butterworth_Acc_x_Bufy,2);
+	// Butterworth_Init(&Butterworth_Acc_y,IIR_Num_Fre100to15,IIR_Den_Fre100to15,Butterworth_Acc_y_Bufx,Butterworth_Acc_y_Bufy,2);
+	// Butterworth_Init(&Butterworth_Acc_z,IIR_Num_Fre100to15,IIR_Den_Fre100to15,Butterworth_Acc_z_Bufx,Butterworth_Acc_z_Bufy,2);	
+
+	Butterworth_Init(&Butterworth_Acc_x,IIR_Num_Fre100to5,IIR_Den_Fre100to5,Butterworth_Acc_x_Bufx,Butterworth_Acc_x_Bufy,2);
+	Butterworth_Init(&Butterworth_Acc_y,IIR_Num_Fre100to5,IIR_Den_Fre100to5,Butterworth_Acc_y_Bufx,Butterworth_Acc_y_Bufy,2);
+	Butterworth_Init(&Butterworth_Acc_z,IIR_Num_Fre100to5,IIR_Den_Fre100to5,Butterworth_Acc_z_Bufx,Butterworth_Acc_z_Bufy,2);	
+
+	//Gyro
+	// Butterworth_Init(&Butterworth_Gyro_x,IIR_Num_Fre100to25,IIR_Den_Fre100to25,Butterworth_Gyro_x_Bufx,Butterworth_Gyro_x_Bufy,2);
+	// Butterworth_Init(&Butterworth_Gyro_y,IIR_Num_Fre100to25,IIR_Den_Fre100to25,Butterworth_Gyro_y_Bufx,Butterworth_Gyro_y_Bufy,2);
+	// Butterworth_Init(&Butterworth_Gyro_z,IIR_Num_Fre100to25,IIR_Den_Fre100to25,Butterworth_Gyro_z_Bufx,Butterworth_Gyro_z_Bufy,2);
+
+	Butterworth_Init(&Butterworth_Gyro_x,IIR_Num_Fre100to20,IIR_Den_Fre100to20,Butterworth_Gyro_x_Bufx,Butterworth_Gyro_x_Bufy,2);
+	Butterworth_Init(&Butterworth_Gyro_y,IIR_Num_Fre100to20,IIR_Den_Fre100to20,Butterworth_Gyro_y_Bufx,Butterworth_Gyro_y_Bufy,2);
+	Butterworth_Init(&Butterworth_Gyro_z,IIR_Num_Fre100to20,IIR_Den_Fre100to20,Butterworth_Gyro_z_Bufx,Butterworth_Gyro_z_Bufy,2);
+
+	//Mag
+	Butterworth_Init(&Butterworth_Mag_x,IIR_Num_Fre100to20,IIR_Den_Fre100to20,Butterworth_Mag_x_Bufx,Butterworth_Mag_x_Bufy,2);
+	Butterworth_Init(&Butterworth_Mag_y,IIR_Num_Fre100to20,IIR_Den_Fre100to20,Butterworth_Mag_y_Bufx,Butterworth_Mag_y_Bufy,2);
+	Butterworth_Init(&Butterworth_Mag_z,IIR_Num_Fre100to20,IIR_Den_Fre100to20,Butterworth_Mag_z_Bufx,Butterworth_Mag_z_Bufy,2);
+
+	//Ultrasonic
+	Butterworth_Init(&Butterworth_Ultrasonic,IIR_Num_Fre100to15,IIR_Den_Fre100to15,Butterworth_Ultrasonic_Bufx,Butterworth_Ultrasonic_Bufy,2);
+
+	//OpticalFlow
+	Butterworth_Init(&Butterworth_OpticalFlow_X,IIR_Num_Fre100to5,IIR_Den_Fre100to5,Butterworth_OpticalFlow_X_Bufx,Butterworth_OpticalFlow_X_Bufy,2);
+	Butterworth_Init(&Butterworth_OpticalFlow_Y,IIR_Num_Fre100to5,IIR_Den_Fre100to5,Butterworth_OpticalFlow_Y_Bufx,Butterworth_OpticalFlow_Y_Bufy,2);
+
+	//UWB
+	// FIRFilter_Init(&FIRFilter_UWB_x,FIR_Num_Fre100to30,FIRFilter_UWB_x_Bufx,3);
+	// FIRFilter_Init(&FIRFilter_UWB_y,FIR_Num_Fre100to30,FIRFilter_UWB_y_Bufx,3);
+
+}
+
+
+
+void DataHandle_RawGyroRotate(const float *RawGyro,float *RotateGyro)
+{
+	RotateGyro[0]=RawGyro[1];
+	RotateGyro[1]=RawGyro[0];
+	RotateGyro[2]=-RawGyro[2];
+	
+}
+
+void DataHandle_GyroFliter(DataHandle_AccGyroMag_TypeDef *FilterData,const float *Gyro)
+{
+	
+	FilterData->Gyro[0]=Butterworth_Filter(&Butterworth_Gyro_x,Gyro[1]);
+	FilterData->Gyro[1]=Butterworth_Filter(&Butterworth_Gyro_y,Gyro[0]);
+	FilterData->Gyro[2]=Butterworth_Filter(&Butterworth_Gyro_z,-Gyro[2]);
+	
+}
+
+// void DataHandle_RawAccRotate(const float *RawAcc,float *RotateAcc)
+// {
+// 	// RotateAcc[0]=-RawAcc[1]*9.80665f+0.70f;
+// 	// RotateAcc[1]=-RawAcc[0]*9.80665f-0.08f;
+// 	// RotateAcc[2]=RawAcc[2]*9.80665f+0.3f;
+
+// 	RotateAcc[0]=-RawAcc[1]*9.80665f;
+// 	RotateAcc[1]=-RawAcc[0]*9.80665f;
+// 	RotateAcc[2]=RawAcc[2]*9.80665f;
+	
+// }
+
+void DataHandle_AccFliter(DataHandle_AccGyroMag_TypeDef *FilterData,const float *Acc)
+{
+	float Acc_handle[3];
+	Acc_handle[0]=Butterworth_Filter(&Butterworth_Acc_x,-Acc[1]);
+	Acc_handle[1]=Butterworth_Filter(&Butterworth_Acc_y,-Acc[0]);
+	Acc_handle[2]=Butterworth_Filter(&Butterworth_Acc_z,Acc[2]);
+	
+	// FilterData->Acc[0]=Acc_handle[0]*9.80665f+0.70f;
+	// FilterData->Acc[1]=Acc_handle[1]*9.80665f-0.08f;
+	// FilterData->Acc[2]=Acc_handle[2]*9.80665f+0.3f;
+
+	// FilterData->Acc[0]=Acc_handle[0]*9.80665f;
+	// FilterData->Acc[1]=Acc_handle[1]*9.80665f;
+	// FilterData->Acc[2]=Acc_handle[2]*9.80665f;
+
+	FilterData->Acc[0]=Acc_handle[0];
+	FilterData->Acc[1]=Acc_handle[1];
+	FilterData->Acc[2]=Acc_handle[2];
+
+	FilterData->Acc[0]=(Acc_handle[0]+0.08)*0.9f*9.80665f;
+	FilterData->Acc[1]=(Acc_handle[1]+0.02)*1.03f*9.80665f;
+	FilterData->Acc[2]=(Acc_handle[2]+0.02)*1.07f*9.80665f;
+
+	// FilterData->Acc[0]=(Acc_handle[0]+0.019)*8.50f;
+	// FilterData->Acc[1]=(Acc_handle[1]-0.008)*10.36f;
+	// FilterData->Acc[2]=(Acc_handle[2]+0.06)*10.72f;
+
+}
+
+void DataHandle_MagFliter(DataHandle_AccGyroMag_TypeDef *FilterData,const float *Mag)
+{
+	FilterData->Mag[0]=(Butterworth_Filter(&Butterworth_Mag_x,Mag[1])-0.07f)*0.31f;
+	FilterData->Mag[1]=(Butterworth_Filter(&Butterworth_Mag_y,Mag[0])-0.13f)*0.32f;
+	FilterData->Mag[2]=(Butterworth_Filter(&Butterworth_Mag_z,-Mag[2])+0.07f)*0.32f;
+}
+
+float DataHandle_PressureSensor1HeightFliter(const float PressureHeight)
+{
+	return FIRFilter_Filter(&FIRFilter_Pressure_Sensor1,PressureHeight);
+}
+
+float DataHandle_PressureSensor2HeightFliter(const float PressureHeight)
+{
+	return FIRFilter_Filter(&FIRFilter_Pressure_Sensor2,PressureHeight);
+}
+
+float DataHandle_UltrasonicHeightFliter(const float UltrasonicHeight)
+{
+	// return FIRFilter_Filter(&FIRFilter_Ultrasonic,UltrasonicHeight);
+	return Butterworth_Filter(&Butterworth_Ultrasonic,UltrasonicHeight);
+}
+
+void DataHandle_UWB(const float Raw_UWB_X,const float Raw_UWB_Y,const float Angle_Yaw,float *Body_X,float *Body_Y)
+{
+	*Body_X= Raw_UWB_X * arm_cos_f32(Angle_Yaw) - Raw_UWB_Y * arm_sin_f32(Angle_Yaw);
+	*Body_Y= Raw_UWB_X * arm_sin_f32(Angle_Yaw) + Raw_UWB_Y * arm_cos_f32(Angle_Yaw);
+}
+
+void DataHandle_OpticalFlowFliter(const float *Raw_OpticalFlowData,float *Fliter_OpticalFlowData)
+{
+	Fliter_OpticalFlowData[0] = Butterworth_Filter(&Butterworth_OpticalFlow_X,Raw_OpticalFlowData[0]);
+	Fliter_OpticalFlowData[1] = Butterworth_Filter(&Butterworth_OpticalFlow_Y,Raw_OpticalFlowData[1]);
+}

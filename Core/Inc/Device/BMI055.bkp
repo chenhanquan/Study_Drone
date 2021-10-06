@@ -1,0 +1,21 @@
+/*
+ * BMI088.h
+ *
+ *  Created on: Jun 3, 2021
+ *      Author: 90797
+ */
+
+#ifndef INC_DEVICE_BMI088_H_
+#define INC_DEVICE_BMI088_H_
+
+#include "stm32f4xx_hal.h"
+
+void BMI055_I2C_Write_Port(const uint8_t Dev_Addr,const uint8_t Reg_Addr,const uint8_t data);
+void BMI055_I2C_Read_Port(const uint8_t Dev_Addr,const uint8_t Reg_Addr,uint8_t *data,const uint8_t len);
+void BMI055_Init(void);
+void BMI055_Read_Gyro(float *RawGyroData);
+void BMI055_Read_Acc(float *RawAccData);
+void BMI055_Read_ID(void);
+
+
+#endif /* INC_DEVICE_BMI088_H_ */

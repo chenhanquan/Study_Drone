@@ -1,0 +1,39 @@
+#include "Butterworth.h"
+#include "stm32f4xx_hal.h"
+
+void Butterworth_Init(Butterworth_Type *ButterworthData,float *num,float *den,float *xBuf,float *yBuf,int order)
+{
+	ButterworthData->num=num;
+	ButterworthData->den=den;
+	ButterworthData->xbuf=xBuf;
+	ButterworthData->ybuf=yBuf;
+	ButterworthData->order=order;
+	ButterworthData->count=0;
+}
+
+float Butterworth_Filter(Butterworth_Type *ButterworthData,const float Xk)
+{
+	int temp=0;
+	ButterworthData->xbuf[ButterworthData->count]=Xk;
+	ButterworthData->ybuf[ButterworthData->count]=0.0f;
+	
+	for(uint8_t i=1;i<ButterworthData->order+1;i++)
+	{
+		if(ButterworthData->count-i>=0)
+		{
+		ButterworthData->ybuf[ButterworthData->count]+=ButterworthData->num[i]*ButterworthData->xbuf[ButterworthData->count-i];
+		ButterworthData->ybuf[ButterworthData->count]-=ButterworthData->den[i]*ButterworthData->ybuf[ButterworthData->count-i];
+		}
+		else
+		{
+		ButterworthData->ybuf[ButterworthData->count]+=ButterworthData->num[i]*ButterworthData->xbuf[ButterworthData->count-i+ButterworthData->order+1];
+		ButterworthData->ybuf[ButterworthData->count]-=ButterworthData->den[i]*ButterworthData->ybuf[ButterworthData->count-i+ButterworthData->order+1];
+		}
+	}
+	ButterworthData->ybuf[ButterworthData->count]+=ButterworthData->num[0]*ButterworthData->xbuf[ButterworthData->count];
+	temp=ButterworthData->count;
+	ButterworthData->count++;
+	if(ButterworthData->count>ButterworthData->order)ButterworthData->count=0;
+	
+	return ButterworthData->ybuf[temp];
+}

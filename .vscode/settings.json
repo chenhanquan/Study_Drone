@@ -1,0 +1,23 @@
+{
+    "files.associations": {
+        "cmsis_os.h": "c",
+        "freertos.h": "c",
+        "portable.h": "c",
+        "main.h": "c",
+        "altitude.h": "c",
+        "nonlinearfunction.h": "c",
+        "i2c_software.h": "c",
+        "mydelay.h": "c",
+        "qmc5883.h": "c",
+        "fusion_opticalflow.h": "c",
+        "datahandle.h": "c",
+        "uwb_position.h": "c",
+        "pid.h": "c",
+        "limits": "c",
+        "ano_dt.h": "c",
+        "mpu6050.h": "c",
+        "bmi088.h": "c",
+        "uwb.h": "c",
+        "led.h": "c"
+    }
+}

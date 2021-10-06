@@ -1,0 +1,75 @@
+/*
+ * BMI088.c
+ *
+ *  Created on: Jun 3, 2021
+ *      Author: 90797
+ */
+#include "BMI055.h"
+#include "math.h"
+#include "main.h"
+
+#define Gyro_Addr (0x68<<1)
+#define Acc_Addr (0x18<<1)
+
+
+void BMI055_I2C_Write_Port(const uint8_t Dev_Addr,const uint8_t Reg_Addr,const uint8_t data)
+{
+	I2C_Software_Write1Byte(Dev_Addr,Reg_Addr,data);
+}
+
+void BMI055_I2C_Read_Port(const uint8_t Dev_Addr,const uint8_t Reg_Addr,uint8_t *data,const uint8_t len)
+{
+	I2C_Software_ReadNByte(Dev_Addr, Reg_Addr,len, data);
+}
+
+#define Gyro_scale 500.0f
+#define Acc_scale 4.0f
+void BMI055_Init()
+{
+	//Gyro初始化
+	BMI055_I2C_Write_Port(Gyro_Addr,0x0F,0x02);		//scale +-500 o/s
+	BMI055_I2C_Write_Port(Gyro_Addr,0x10,0x07);		//ODR 100Hz filter bandwidth 32Hz
+	BMI055_I2C_Write_Port(Gyro_Addr,0x11,0x00);		//mode:normal
+	BMI055_I2C_Write_Port(Gyro_Addr,0x12,0x00);		//mode:normal
+	//Acc初始化
+	BMI055_I2C_Write_Port(Acc_Addr,0x0F,0x05);		//+-4g
+	BMI055_I2C_Write_Port(Acc_Addr,0x10,0x0B);		//BW 62.5Hz
+	BMI055_I2C_Write_Port(Acc_Addr,0x11,0x00);		//mode:normal
+	BMI055_I2C_Write_Port(Acc_Addr,0x13,0x00);
+}
+
+void BMI055_Read_Gyro(float *RawGyroData)
+{
+	uint8_t sensor_data[6];
+	float factor;
+	factor=Gyro_scale/32768.0f;
+	BMI055_I2C_Read_Port(Gyro_Addr,0x02,sensor_data,6);
+
+	*RawGyroData=((int16_t)((sensor_data[1]<<8)|sensor_data[0]))*factor;
+	*(RawGyroData+1)=((int16_t)((sensor_data[3]<<8)|sensor_data[2]))*factor;
+	*(RawGyroData+2)=((int16_t)((sensor_data[5]<<8)|sensor_data[4]))*factor;
+}
+
+void BMI055_Read_Acc(float *RawAccData)
+{
+	uint8_t sensor_data[6];
+	float factor;
+	factor=Acc_scale/2048.0f;
+	BMI055_I2C_Read_Port(Acc_Addr,0x02,sensor_data,6);
+
+//	*RawAccData=((((int8_t)sensor_data[1])*64) + (sensor_data[0]>>4))*factor;
+//	*(RawAccData+1)=((((int8_t)sensor_data[3])*64) + (sensor_data[2]>>4))*factor;
+//	*(RawAccData+2)=((((int8_t)sensor_data[5])*64) + (sensor_data[4]>>4))*factor;
+	
+	*RawAccData=((((int8_t)sensor_data[1])*16) + (sensor_data[0]>>4))*factor;
+	*(RawAccData+1)=((((int8_t)sensor_data[3])*16) + (sensor_data[2]>>4))*factor;
+	*(RawAccData+2)=((((int8_t)sensor_data[5])*16) + (sensor_data[4]>>4))*factor;
+}
+
+void BMI055_Read_ID()
+{
+	uint8_t id_gyro,id_acc;
+	BMI055_I2C_Read_Port(Gyro_Addr,0x00,&id_gyro,1);
+	BMI055_I2C_Read_Port(Acc_Addr,0x00,&id_acc,1);
+
+}

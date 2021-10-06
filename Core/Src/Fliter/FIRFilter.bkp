@@ -1,0 +1,34 @@
+#include "FIRFilter.h"
+
+
+void FIRFilter_Init(FIRFilter_Type *FIRFilter,const float *num,const float *xBuf,const uint8_t order)
+{
+	FIRFilter->num=num;
+	FIRFilter->xbuf=xBuf;
+	FIRFilter->order=order;
+	FIRFilter->count=0;
+}
+
+float FIRFilter_Filter(FIRFilter_Type *FIRFilter,const float Xk)
+{
+	float output=0.0f;
+	FIRFilter->xbuf[FIRFilter->count]=Xk;
+	
+	for(uint8_t i=1;i<FIRFilter->order+1;i++)
+	{
+		if(FIRFilter->count-i>=0)
+		{
+			output+=FIRFilter->num[i]*FIRFilter->xbuf[FIRFilter->count-i];
+		}
+		else
+		{
+			output+=FIRFilter->num[i]*FIRFilter->xbuf[FIRFilter->count-i+FIRFilter->order+1];
+		}
+	}
+	output+=FIRFilter->num[0]*FIRFilter->xbuf[FIRFilter->count];
+
+	FIRFilter->count++;
+	if(FIRFilter->count>FIRFilter->order)FIRFilter->count=0;
+	
+	return output;
+}

@@ -1,0 +1,112 @@
+ /**
+  ******************************************************************************
+  * @file    mpu6050.c
+  * @author  CHEN HANQUAN
+  * @version V1.0
+  * @date    16-August-2020
+  * @brief   mpu6050ģ����ƺ���
+  * @note    
+	******************************************************************************
+  */
+#include "mpu6050.h"
+#include "main.h"
+
+#define GRAVITY_MSS			9.80665f		      // m/s^2
+#define DegToRadian      0.0174533f;
+
+#define GYRO_FILTER_NUM 10
+#define ACC_FILTER_NUM 12
+
+#define GYRO_FULL_SCALE 250
+#define ACC_FULL_SCALE 2
+
+static void MPU6050_ReadByte(uint8_t slaveAddr, uint8_t regAddr,  uint8_t *data);
+static void MPU6050_ReadNByte(uint8_t slaveAddr, uint8_t regAddr,uint8_t len,  uint8_t *data);
+static void MPU6050_ByteWrite(uint8_t slaveAddr,uint8_t writeAddr ,uint8_t data);
+
+/** �����ݺ���������I2C�ӿ�
+ * @param slaveAddr I2C slave device address
+ * @param regAddr Register regAddr to read from
+ * @param data Container for single bit value
+ */
+static void MPU6050_ReadByte(uint8_t slaveAddr, uint8_t regAddr,  uint8_t *data)
+{
+	I2C_Software_Read1Byte(slaveAddr,regAddr,data);
+}
+
+static void MPU6050_ReadNByte(uint8_t slaveAddr, uint8_t regAddr,uint8_t len,  uint8_t *data)
+{
+	I2C_Software_ReadNByte(slaveAddr,regAddr,len,data);
+}
+
+/**
+ * @brief  д����������I2C�ӿ�
+ * @param  slaveAddr : slave address MPU6050_DEFAULT_ADDRESS
+ * @param  pBuffer : pointer to the buffer  containing the data to be written to the MPU6050.
+ * @param  writeAddr : address of the register in which the data will be written
+ * @return None
+ */
+static void MPU6050_ByteWrite(uint8_t slaveAddr,uint8_t writeAddr ,uint8_t data)
+{
+	I2C_Software_Write1Byte(slaveAddr,writeAddr,data);
+}
+
+/**
+ * @brief  MPU6050��ʼ��
+ * @return None
+ */
+void MPU6050_Init()
+{ 
+	MPU6050_ByteWrite(MPU6050_DEFAULT_ADDRESS,MPU6050_RA_PWR_MGMT_1, 0x01);      //时钟选择
+	MPU6050_ByteWrite(MPU6050_DEFAULT_ADDRESS,MPU6050_RA_SMPLRT_DIV, 0x00);      // sample rate.  Fsample= 1Khz/(<this value>+1) = 1000Hz
+	MPU6050_ByteWrite(MPU6050_DEFAULT_ADDRESS,0x1A, 0x04);     //10Hz滤波 加速度 角速度
+	MPU6050_ByteWrite(MPU6050_DEFAULT_ADDRESS,MPU6050_RA_ACCEL_CONFIG, 0x00);    //加速度 正负4g
+	MPU6050_ByteWrite(MPU6050_DEFAULT_ADDRESS,MPU6050_RA_GYRO_CONFIG, 0x00);	//角速度 正负250°/s
+}
+
+/**
+ * @brief  读取设备ID
+ * @return None
+ */
+uint8_t MPU6050_GetDeviceID()
+{
+    uint8_t tmp=0;
+    MPU6050_ReadByte(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_WHO_AM_I,&tmp);
+    return tmp;
+}
+
+/**
+ * @brief  获取6050原始数据（经过坐标转换）
+ * @return None
+ */
+void MPU6050_GetRawData(float *MPU6050Data_Acc,float *MPU6050Data_Gyro)
+{
+	uint8_t temp[14] = {0};
+	float raw_acc_xyz[3]={0},raw_gyro_xyz[3]={0};
+	MPU6050_ReadNByte(MPU6050_DEFAULT_ADDRESS,MPU6050_RA_ACCEL_XOUT_H,14,temp);
+	/* Get acceleration */
+  for (uint8_t i = 0; i < 3; i++)
+	{
+    raw_acc_xyz[i] = ((int16_t)((uint16_t) temp[2 * i] << 8) + temp[2 * i + 1])/32767.0f * ACC_FULL_SCALE;
+	}
+	/* Get Angular rate */
+  for (uint8_t i = 4; i < 7; i++)
+	{
+	  raw_gyro_xyz[i-4] = ((int16_t) ((uint16_t) temp[2 * i] << 8) + temp[2 * i + 1])/32767.0f*GYRO_FULL_SCALE;
+	}
+//   MPU6050Data->acc[0]=raw_acc_xyz[1];    //传感器坐标转到机体坐标
+//   MPU6050Data->acc[1]=raw_acc_xyz[0];
+//   MPU6050Data->acc[2]=-raw_acc_xyz[2];
+
+//   MPU6050Data->gyro[0]=raw_gyro_xyz[1];
+//   MPU6050Data->gyro[1]=raw_gyro_xyz[0];
+//   MPU6050Data->gyro[2]=-raw_gyro_xyz[2];
+
+  MPU6050Data_Acc[0]=raw_acc_xyz[0];    //传感器坐标转到机体坐标
+  MPU6050Data_Acc[1]=raw_acc_xyz[1];
+  MPU6050Data_Acc[2]=raw_acc_xyz[2];
+
+  MPU6050Data_Gyro[0]=raw_gyro_xyz[0];
+MPU6050Data_Gyro[1]=raw_gyro_xyz[1];
+  MPU6050Data_Gyro[2]=raw_gyro_xyz[2];
+}
