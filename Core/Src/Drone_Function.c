@@ -113,7 +113,7 @@ void Drone_DataHandle(void)
 	BMI088_Read_Gyro(MyDrone.Raw_GyroData);
 	DataHandle_GyroFilter(&MyDrone.Filter_AccGyroMag,MyDrone.Raw_GyroData,MyDrone.DataHandle_Raw_Gyro_Rotate);
 
-	osDelay(2);
+	osDelay(1);
 	//获取磁力计数据
 	QMC5883_Read(MyDrone.Raw_MagData);			
 	DataHandle_MagFilter(&MyDrone.Filter_AccGyroMag,MyDrone.Raw_MagData);
@@ -164,6 +164,7 @@ void Drone_DataHandle(void)
 	/***************************坐标旋转结束********************************/
 
 	/*****************************获取高度*********************************/
+	osDelay(1);
 	MyDrone.Raw_PressureHeight1=SPL06_GetSensor1Height();
 	MyDrone.Filter_PressureHeightSensor1=DataHandle_PressureSensor1HeightFilter(MyDrone.Raw_PressureHeight1);
 	// MyDrone.Raw_PressureHeight2=SPL06_GetSensor2Height();
@@ -176,26 +177,13 @@ void Drone_DataHandle(void)
 
 	if(MyDrone.Mode!=Lock)
 	{
-		// float Rel_Height_Pressure;
-		// Rel_Height_Pressure=MyDrone.Fusion_PressureAltitude-MyDrone.Origin_Height_Pressure;
-		// // Rel_Height_Ultrasonic=MyDrone.DataHandle_Height_Ultrasonic-MyDrone.Origin_Height_Ultrasonic;
-		// Altitude_GetRelAltitudeAndZVelocity(&(MyDrone.Fusion_AltitudeData),MyDrone.DataHandle_Acceleration_Axis_N[2],Rel_Height_Pressure,MyDrone.Fliter_UltrasonicHeight,MyDrone.Origin_Height_Ultrasonic,MyDrone.Fusion_IMUData.angle);		//获取高度
 		float Rel_Height_Ultrasonic;
-		// Rel_Height_Ultrasonic = MyDrone.Fliter_UltrasonicHeight*arm_cos_f32(MyDrone.Fusion_IMUData.angle[0]*DEG2RAD)*arm_cos_f32(MyDrone.Fusion_IMUData.angle[1]*DEG2RAD)-MyDrone.Origin_Height_Ultrasonic;
-
 		Rel_Height_Ultrasonic = MyDrone.Filter_UltrasonicHeight*arm_cos_f32(MyDrone.Fusion_IMUData.angle[0]*DEG2RAD)*arm_cos_f32(MyDrone.Fusion_IMUData.angle[1]*DEG2RAD)-MyDrone.Origin_Height_Ultrasonic;
-
-		// if(fabs(MyDrone.Fliter_UltrasonicHeight)<10)
-		// {
-		// 	MyDrone.Fusion_AltitudeData.Fusion_Altitude = 0;
-		// 	MyDrone.Fusion_AltitudeData.Estimation_Velocity_Z = 0;
-		// }
-		// else{
-			// Altitude_GetRelAltitudeAndZVelocity_Ultrasonic(&(MyDrone.Fusion_AltitudeData),MyDrone.DataHandle_Acceleration_Axis_N[2],Rel_Height_Ultrasonic);
 
 		Altitude_GetRelAltitudeAndZVelocity_Ultrasonic(&(MyDrone.Fusion_AltitudeData),MyDrone.DataHandle_Acceleration_Axis_Z,Rel_Height_Ultrasonic);
 		// }
-		
+
+		// MyDrone.UserData1[4] = Rel_Height_Ultrasonic;
 	}
 
 	// MyDrone.UserData[0] = MyDrone.Raw_PressureHeight1 ;
@@ -231,7 +219,7 @@ void Drone_DataHandle(void)
 	/****************************获取定点结束*******************************/
 
 	// MyDrone.UserData[0] = MyDrone.Raw_UltrasonicHeight ;
-	// MyDrone.UserData[1] = MyDrone.Fliter_UltrasonicHeight ;
+	// MyDrone.UserData[1] = MyDrone.Filter_UltrasonicHeight ;
 	// MyDrone.UserData[2] = MyDrone.Fusion_AltitudeData.Estimation_Velocity_Z ;
 	// MyDrone.UserData[3] = MyDrone.Fusion_AltitudeData.Fusion_Altitude ;
 
@@ -246,13 +234,13 @@ void Drone_DataHandle(void)
 
 	// MyDrone.UserData1[0] = MyDrone.Fusion_Est_v_OpticalFlow[0] ;
 	// MyDrone.UserData1[1] = MyDrone.Fusion_Est_v_OpticalFlow[1] ;
-	// MyDrone.UserData[2] = MyDrone.Fliter_OpticalFlowData[0] ;
-	// MyDrone.UserData[3] = MyDrone.Fliter_OpticalFlowData[1] ;
+	// MyDrone.UserData[2] = MyDrone.Filter_OpticalFlowData[0] ;
+	// MyDrone.UserData[3] = MyDrone.Filter_OpticalFlowData[1] ;
 
 }
 
 #define ANGLE_MAX 25.0f
-#define VEL_MAX 25.0f
+#define VEL_MAX 150.0f
 void Drone_TargetSet(void)		//50Hz
 {
 	float Roll_target,Pitch_target;
@@ -315,7 +303,7 @@ void Drone_TargetSet(void)		//50Hz
 		if(MyDrone.Mode==Space_Control)
 		{
 			// Roll_target=PID_OpticalFlow_X(0.0f,MyDrone.Fusion_Est_v_OpticalFlow[0]);
-			Pitch_target=PID_OpticalFlow_X(0.0f,MyDrone.Filter_OpticalFlowData[0]);
+			Pitch_target=-PID_OpticalFlow_X(0.0f,MyDrone.Filter_OpticalFlowData[0]);
 		}
 	}
 	else
@@ -325,7 +313,7 @@ void Drone_TargetSet(void)		//50Hz
 			if(MyDrone.Raw_RemoteData.Ch2_Pitch>1500){MyDrone.Target.Vel_X=(MyDrone.Raw_RemoteData.Ch2_Pitch-1550)/450.0f*VEL_MAX;}
 			else{MyDrone.Target.Vel_X=(MyDrone.Raw_RemoteData.Ch2_Pitch-1450)/450.0f*VEL_MAX;}
 
-			Pitch_target=PID_OpticalFlow_X(MyDrone.Target.Vel_X,MyDrone.Filter_OpticalFlowData[0]);
+			Pitch_target=-PID_OpticalFlow_X(MyDrone.Target.Vel_X,MyDrone.Filter_OpticalFlowData[0]);
 		}
 		else
 		{

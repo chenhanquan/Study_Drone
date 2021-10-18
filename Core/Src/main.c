@@ -673,7 +673,8 @@ void Task50Hz(void const * argument)
     Drone_ModeControl();
 	  if(MyDrone.Mode!=Lock)
 	  {
-		  Drone_TargetSet();
+      osDelay(1);
+      Drone_TargetSet();
 	  }
     osDelayUntil(&PreviousWakeTime,20);
   }

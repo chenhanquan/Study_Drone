@@ -297,8 +297,10 @@ void ANO_SendData_Standard()
 static void ANO_DT_SendDataPort(uint8_t	*DateToSend,uint8_t len)
 {
 //	HAL_UART_Transmit(&Drone_USART,DateToSend, len, 2);
-	HAL_UART_Transmit_DMA(&Drone_USART,DateToSend, len);
 
+	// osThreadSuspendAll();
+	HAL_UART_Transmit_DMA(&Drone_USART, DateToSend, len);
+	// osThreadResumeAll();
 }
 
 

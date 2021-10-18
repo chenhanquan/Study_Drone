@@ -18,8 +18,8 @@ arm_pid_instance_f32 PID_Roll_inner,PID_Pitch_inner;
 // float PID_Para_RollAndPitch_outer[3] = {7.0f,0.0f,0.0f};  //6.0			//朗宇电机
 // float PID_Para_RollAndPitch_inner[3] = {0.8f,0.0f,0.15f};  //0.5-0.8
 
-float PID_Para_RollAndPitch_outer[3] = {6.6f,0.01f,0.1f};  //6.0			//朗宇电机
-float PID_Para_RollAndPitch_inner[3] = {0.45f,0.0f,0.2f};  //0.5-0.8
+float PID_Para_RollAndPitch_outer[3] = {6.2f,0.01f,0.1f};  //6.0			//朗宇电机
+float PID_Para_RollAndPitch_inner[3] = {0.4f,0.0f,0.3f};  //0.5-0.8
 
 //Yaw Parameter
 arm_pid_instance_f32 PID_Yaw_outer,PID_Yaw_inner; 
@@ -45,8 +45,7 @@ float PID_Para_Altitude_Vel[3] = {1.4f,0.0f,0.0f};
 
 //OpticalFlow Parameter
 arm_pid_instance_f32 PID_OpticalFlow_X_Outer,PID_OpticalFlow_Y_Outer;
-float PID_Para_OpticalFlow_XY_Outer[3] = {0.1f,0.0f,0.0f};
-
+float PID_Para_OpticalFlow_XY_Outer[3] = {0.05f, 0.0f, 0.0f}; //0.05(有稳态误差，无抖动，无超调) 0.1（有稳态误差，有抖动，无超调）
 
 void PID_Init()
 {

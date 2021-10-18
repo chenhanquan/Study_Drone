@@ -71,41 +71,63 @@ void Altitude_GetRelAltitudeAndZVelocity(Altitude_TypeDef *Altitude_Struct,const
 
 }
 
-void Altitude_GetRelAltitudeAndZVelocity_Ultrasonic(Altitude_TypeDef *Altitude_Struct,const float Acc_Z,const float Rel_Height_Ultrasonic)
+// void Altitude_GetRelAltitudeAndZVelocity_Ultrasonic(Altitude_TypeDef *Altitude_Struct,const float Acc_Z,const float Rel_Height_Ultrasonic)
+// {
+// 	static float Acc_Z_LastTime;
+// 	static float Rel_Height_Ultrasonic_LastTime;
+// 	static float Rel_Estimation_Velocity_LastTime;
+// 	float Estimation_Velocity_Z;
+
+// 	Estimation_Velocity_Z = (Rel_Height_Ultrasonic - Rel_Height_Ultrasonic_LastTime)/FUSIONTIME;
+// 	if(fabs(Estimation_Velocity_Z)<5000.0f)
+// 	{	
+// 		Rel_Height_Ultrasonic_LastTime = Rel_Height_Ultrasonic;
+// 	}
+	
+// 	Altitude_Struct->Estimation_Velocity_Z+=Acc_Z_LastTime*FUSIONTIME;
+// 	if(fabs(Estimation_Velocity_Z)<5000.0f)
+// 	{
+// 		Altitude_Struct->Estimation_Velocity_Z+=0.3f*(Estimation_Velocity_Z-Altitude_Struct->Estimation_Velocity_Z);
+// 	}
+
+// 	Altitude_Struct->Fusion_Altitude+=Rel_Estimation_Velocity_LastTime*FUSIONTIME;
+// 	if(fabs(Estimation_Velocity_Z)<5000.0f)
+// 	{
+// 		Altitude_Struct->Fusion_Altitude+=0.01f*(Rel_Height_Ultrasonic-Altitude_Struct->Fusion_Altitude);
+// 	}
+
+// 	//test
+	
+// 	// Rel_Height_Ultrasonic_LastTime = Rel_Height_Ultrasonic;
+	
+// 	// Altitude_Struct->Estimation_Velocity_Z+=Acc_Z_LastTime*FUSIONTIME;
+// 	// Altitude_Struct->Estimation_Velocity_Z+=0.005f*(Estimation_Velocity_Z-Altitude_Struct->Estimation_Velocity_Z);
+
+// 	// Altitude_Struct->Fusion_Altitude+=Rel_Estimation_Velocity_LastTime*FUSIONTIME;
+// 	// Altitude_Struct->Fusion_Altitude+=0.005f*(Rel_Height_Ultrasonic-Altitude_Struct->Fusion_Altitude);
+
+// 	Acc_Z_LastTime=Acc_Z;
+// 	Rel_Estimation_Velocity_LastTime=Altitude_Struct->Estimation_Velocity_Z;
+// }
+
+void Altitude_GetRelAltitudeAndZVelocity_Ultrasonic(Altitude_TypeDef *Altitude_Struct, const float Acc_Z, const float Rel_Height_Ultrasonic)
 {
 	static float Acc_Z_LastTime;
 	static float Rel_Height_Ultrasonic_LastTime;
 	static float Rel_Estimation_Velocity_LastTime;
 	float Estimation_Velocity_Z;
 
-	Estimation_Velocity_Z = (Rel_Height_Ultrasonic - Rel_Height_Ultrasonic_LastTime)/FUSIONTIME;
-	if(fabs(Estimation_Velocity_Z)<5000.0f)
-	{	
-		Rel_Height_Ultrasonic_LastTime = Rel_Height_Ultrasonic;
-	}
-	
-	Altitude_Struct->Estimation_Velocity_Z+=Acc_Z_LastTime*FUSIONTIME;
-	if(fabs(Estimation_Velocity_Z)<5000.0f)
+	Estimation_Velocity_Z = (Rel_Height_Ultrasonic - Rel_Height_Ultrasonic_LastTime) / FUSIONTIME;
+	Rel_Height_Ultrasonic_LastTime = Rel_Height_Ultrasonic;
+
+	Altitude_Struct->Estimation_Velocity_Z += Acc_Z_LastTime * FUSIONTIME;
+	Altitude_Struct->Estimation_Velocity_Z += 0.3f * (Estimation_Velocity_Z - Altitude_Struct->Estimation_Velocity_Z);
+
+	Altitude_Struct->Fusion_Altitude += Rel_Estimation_Velocity_LastTime * FUSIONTIME;
+	if (Rel_Height_Ultrasonic < 350.0f && Rel_Height_Ultrasonic > -20.0f)
 	{
-		Altitude_Struct->Estimation_Velocity_Z+=0.3f*(Estimation_Velocity_Z-Altitude_Struct->Estimation_Velocity_Z);
+		Altitude_Struct->Fusion_Altitude += 0.01f * (Rel_Height_Ultrasonic - Altitude_Struct->Fusion_Altitude);
 	}
-
-	Altitude_Struct->Fusion_Altitude+=Rel_Estimation_Velocity_LastTime*FUSIONTIME;
-	if(fabs(Estimation_Velocity_Z)<5000.0f)
-	{
-		Altitude_Struct->Fusion_Altitude+=0.01f*(Rel_Height_Ultrasonic-Altitude_Struct->Fusion_Altitude);
-	}
-
-	//test
-	
-	// Rel_Height_Ultrasonic_LastTime = Rel_Height_Ultrasonic;
-	
-	// Altitude_Struct->Estimation_Velocity_Z+=Acc_Z_LastTime*FUSIONTIME;
-	// Altitude_Struct->Estimation_Velocity_Z+=0.005f*(Estimation_Velocity_Z-Altitude_Struct->Estimation_Velocity_Z);
-
-	// Altitude_Struct->Fusion_Altitude+=Rel_Estimation_Velocity_LastTime*FUSIONTIME;
-	// Altitude_Struct->Fusion_Altitude+=0.005f*(Rel_Height_Ultrasonic-Altitude_Struct->Fusion_Altitude);
-
-	Acc_Z_LastTime=Acc_Z;
-	Rel_Estimation_Velocity_LastTime=Altitude_Struct->Estimation_Velocity_Z;
+	Acc_Z_LastTime = Acc_Z;
+	Rel_Estimation_Velocity_LastTime = Altitude_Struct->Estimation_Velocity_Z;
 }

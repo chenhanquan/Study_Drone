@@ -71,7 +71,7 @@ Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
 DEVICE_C_SOURCES = $(wildcard Core/Src/Device/*.c)
 COM_C_SOURCES = $(wildcard Core/Src/Communication/*.c)
 DATAFUSION_C_SOURCES = $(wildcard Core/Src/DataFusion/*.c)
-FLITER_C_SOURCES = $(wildcard Core/Src/Fliter/*.c)
+FLITER_C_SOURCES = $(wildcard Core/Src/Filter/*.c)
 CONTROL_C_SOURCES = $(wildcard Core/Src/Control/*.c)
 MATH_C_SOURCES = $(wildcard Core/Src/math/*.c)
 
@@ -194,6 +194,7 @@ OCD_LINK_FILE = stlink-v2.cfg#烧录器配置文件，用于普通买到的烧�
 # OCD_LINK_FILE = stlink.cfg#烧录器配置文件，用于普通买到的烧录器
 # OCD_LINK_FILE = stlink-v2-1.cfg	#烧录器配置文件，用于stm32f4discovery
 # OCD_LINK_FILE = jlink.cfg#烧录器配置文件，用于普通买到的烧录器
+# OCD_LINK_FILE = cmsis-dap.cfg
 
 OCD_CHIP_FILE = stm32f4x.cfg	#芯片配置文件
 
